@@ -1,28 +1,17 @@
 @echo off
 setlocal
 
-:: Note: We've disabled node reuse because it causes file locking issues.
-::       The issue is that we extend the build with our own targets which
-::       means that that rebuilding cannot successfully delete the task
-::       assembly. 
+:: set build tools feed to local
+set BUILD_TOOLS_FEED=C:\Users\joperezr\Desktop\repo\buildtools\bin\packages
 
-if not defined VisualStudioVersion (
-    if defined VS140COMNTOOLS (
-        call "%VS140COMNTOOLS%\VsDevCmd.bat"
-        goto :EnvSet
-    )
+call init-tools.cmd
 
-    if defined VS120COMNTOOLS (
-        call "%VS120COMNTOOLS%\VsDevCmd.bat"
-        goto :EnvSet
-    )
+:: Check if this is a netcore msbuild call
+set NETCORE_MSBUILD_PATH=
+set PORTABLE_TARGETS_PATH=
+IF NOT "%NETCORE_BUILD%"=="" set NETCORE_MSBUILD_PATH=C:\Users\joperezr\Desktop\repo\msbuild\bin\Windows_NT\Debug-NetCore
+IF NOT "%NETCORE_BUILD%"=="" set PORTABLE_TARGETS_PATH=C:\Users\joperezr\Desktop\repo\msbuild\bin\Windows_NT\Debug-NetCore\Extensions
 
-    echo Error: build.cmd requires Visual Studio 2013 or 2015.  
-    echo        Please see https://github.com/dotnet/corefx/blob/master/Documentation/project-docs/developer-guide.md for build instructions.
-    exit /b 1
-)
-
-:EnvSet
 :: Clear the 'Platform' env variable for this session,
 :: as it's a per-project setting within the build, and
 :: misleading value (such as 'MCD' in HP PCs) may lead
@@ -43,8 +32,10 @@ call :build %*
 
 goto :AfterBuild
 
+:: To build in .NetCore version of msbuild, then set Env Variable NETCORE_MSBUILD_PATH to point to the folder where you have msbuild with its runtime.
 :build
-%_buildprefix% msbuild "%_buildproj%" /nologo /maxcpucount /verbosity:minimal /nodeReuse:false /fileloggerparameters:Verbosity=normal;LogFile="%_buildlog%";Append %* %_buildpostfix%
+IF "%NETCORE_MSBUILD_PATH%"=="" %_buildprefix% msbuild "%_buildproj%" /verbosity:diag /nodeReuse:false /fileloggerparameters:Verbosity=normal;LogFile="%_buildlog%";Append %* %_buildpostfix%
+IF NOT "%NETCORE_MSBUILD_PATH%"=="" %_buildprefix% "%NETCORE_MSBUILD_PATH%/CoreRun.exe" "%NETCORE_MSBUILD_PATH%/MSBuild.exe" "%_buildproj%" /verbosity:diag /p:NETCORE_MSBUILD_PATH=%NETCORE_MSBUILD_PATH%;ImportGenNugetPackageVersions=false /nodeReuse:false /fileloggerparameters:Verbosity=normal;LogFile="%_buildlog%";Append %* %_buildpostfix%
 set BUILDERRORLEVEL=%ERRORLEVEL%
 goto :eof
 

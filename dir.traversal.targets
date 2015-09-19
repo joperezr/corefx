@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-  <Target Name="BuildAllProjects">
+  <Target Name="BuildAllProjects"
+          Condition="'$(NETCORE_MSBUILD_PATH)' == ''">
     <PropertyGroup>
       <DefaultBuildAllTarget Condition="'$(DefaultBuildAllTarget)'==''">$(MSBuildProjectDefaultTargets)</DefaultBuildAllTarget>
     </PropertyGroup>
@@ -22,6 +23,20 @@
              ContinueOnError="ErrorAndContinue" />
 
     <!-- Given we ErrorAndContinue we need to propagate the error if the overall task failed -->
+    <Error Condition="'$(MSBuildLastTaskResult)'=='false'" />
+  </Target>
+  
+  <Target Name="BuildAllProjectsWithNetCoreMSBuild"
+          Condition="'$(NETCORE_MSBUILD_PATH)' != ''"
+          BeforeTargets="BuildAllProjects">
+    
+    <PropertyGroup>
+      <MSBuildCommand>&quot;$(NETCORE_MSBUILD_PATH)/CoreRun.exe&quot; &quot;$(NETCORE_MSBUILD_PATH)/MSBuild.exe&quot;</MSBuildCommand>
+    </PropertyGroup>
+
+    <Exec Command="$(MSBuildCommand) @(Project) /v:diag /p:Dummy=%(Identity);DefaultBuildAllTarget=$(DefaultBuildAllTarget);BuildAllProjects=true"
+          ContinueOnError="ErrorAndContinue"/>
+  
     <Error Condition="'$(MSBuildLastTaskResult)'=='false'" />
   </Target>
 
