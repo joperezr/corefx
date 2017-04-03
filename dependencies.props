@@ -17,21 +17,24 @@
        These ref versions are pulled from https://github.com/dotnet/versions.
   -->
   <PropertyGroup>
-    <CoreFxCurrentRef>1f6532b32fa97b7810ae57ccbc28ab4db50f9c1a</CoreFxCurrentRef>
-    <CoreClrCurrentRef>1c85d98be6efa8cf210d8f7ce4a24261a9011e78</CoreClrCurrentRef>
+    <CoreFxCurrentRef>5ee16d8f6fa0fd6fb9edc21704bdd27558e8bfc1</CoreFxCurrentRef>
+    <CoreClrCurrentRef>5ee16d8f6fa0fd6fb9edc21704bdd27558e8bfc1</CoreClrCurrentRef>
     <ExternalCurrentRef>3b8a99621d89ad9877f053ba8af25e0f25dcd9d8</ExternalCurrentRef>
-    <ProjectNTfsCurrentRef>2e21bfd4e7556b77af80268812a802d5f7bd701f</ProjectNTfsCurrentRef>
+    <ProjectNTfsCurrentRef>5ee16d8f6fa0fd6fb9edc21704bdd27558e8bfc1</ProjectNTfsCurrentRef>
+    <ProjectNTfsTestILCCurrentRef>5ee16d8f6fa0fd6fb9edc21704bdd27558e8bfc1</ProjectNTfsTestILCCurrentRef>
     <SniCurrentRef>05650e53f2aa4497f74cd6e9b053d3f69f64b0bd</SniCurrentRef>
-    <StandardCurrentRef>5a38b0ed841e10af1607905d58dd30e326dbff01</StandardCurrentRef>
+    <StandardCurrentRef>5ee16d8f6fa0fd6fb9edc21704bdd27558e8bfc1</StandardCurrentRef>
   </PropertyGroup>
 
   <!-- Auto-upgraded properties for each build info dependency. -->
   <PropertyGroup>
-    <CoreFxExpectedPrerelease>beta-25129-02</CoreFxExpectedPrerelease>
-    <CoreClrExpectedPrerelease>preview1-25130-03</CoreClrExpectedPrerelease>
+    <CoreFxExpectedPrerelease>preview1-25203-01</CoreFxExpectedPrerelease>
+    <CoreClrExpectedPrerelease>preview1-25203-02</CoreClrExpectedPrerelease>
     <ExternalExpectedPrerelease>beta-25016-01</ExternalExpectedPrerelease>
-    <ProjectNTfsExpectedPrerelease>beta-25129-00</ProjectNTfsExpectedPrerelease>
-    <NETStandardPackageVersion>2.0.0-beta-25130-01</NETStandardPackageVersion>
+    <ProjectNTfsExpectedPrerelease>beta-25203-00</ProjectNTfsExpectedPrerelease>
+    <ProjectNTfsTestILCExpectedPrerelease>beta-25203-00</ProjectNTfsTestILCExpectedPrerelease>
+    <ProjectNTfsTestILCPackageVersion>1.0.0-beta-25203-00</ProjectNTfsTestILCPackageVersion>
+    <NETStandardPackageVersion>2.0.0-preview1-25203-01</NETStandardPackageVersion>
     <NETStandardPackageId>NETStandard.Library</NETStandardPackageId>
     <!-- Use the SNI runtime package -->
     <SniPackageVersion>4.4.0-beta-25007-02</SniPackageVersion>
@@ -76,6 +79,10 @@
       <BuildInfoPath>$(BaseDotNetBuildInfo)projectn-tfs/$(DependencyBranch)</BuildInfoPath>
       <CurrentRef>$(ProjectNTfsCurrentRef)</CurrentRef>
     </RemoteDependencyBuildInfo>
+    <RemoteDependencyBuildInfo Condition="'$(DisableProjectNTfsAutoUpgrade)' != 'true'" Include="ProjectNTfsTestILC">
+      <BuildInfoPath>$(BaseDotNetBuildInfo)projectn-tfs-testilc/$(DependencyBranch)</BuildInfoPath>
+      <CurrentRef>$(ProjectNTfsTestILCCurrentRef)</CurrentRef>
+    </RemoteDependencyBuildInfo>
 
     <DependencyBuildInfo Include="@(RemoteDependencyBuildInfo)">
       <RawVersionsBaseUrl>https://raw.githubusercontent.com/dotnet/versions</RawVersionsBaseUrl>
@@ -105,6 +112,16 @@
       <Path>$(MSBuildThisFileFullPath)</Path>
       <ElementName>ProjectNTfsExpectedPrerelease</ElementName>
       <BuildInfoName>ProjectNTfs</BuildInfoName>
+    </XmlUpdateStep>
+    <XmlUpdateStep Condition="'$(DisableProjectNTfsAutoUpgrade)' != 'true'" Include="ProjectNTfsTestILC">
+      <Path>$(MSBuildThisFileFullPath)</Path>
+      <ElementName>ProjectNTfsTestILCExpectedPrerelease</ElementName>
+      <BuildInfoName>ProjectNTfsTestILC</BuildInfoName>
+    </XmlUpdateStep>
+    <XmlUpdateStep Condition="'$(DisableProjectNTfsAutoUpgrade)' != 'true'" Include="ProjectNTfsTestILC">
+      <Path>$(MSBuildThisFileFullPath)</Path>
+      <ElementName>ProjectNTfsTestILCPackageVersion</ElementName>
+      <PackageId>TestILCNugetPackageForCoreFX</PackageId>
     </XmlUpdateStep>
     <XmlUpdateStep Include="Sni">
       <Path>$(MSBuildThisFileFullPath)</Path>
@@ -164,8 +181,9 @@
     </DependencyBuildInfo>
 
     <!-- project.json files to update -->
-    <ProjectJsonFiles Include="external\**\project.json" />
-    <ProjectJsonFiles Include="external\**\project.json.template" />
+    <ProjectJsonFiles Include="$(MSBuildThisFileDirectory)external\**\project.json" />
+    <ProjectJsonFiles Include="$(MSBuildThisFileDirectory)external\**\optional.json" />
+    <ProjectJsonFiles Include="$(MSBuildThisFileDirectory)external\**\project.json.template" />
 
   </ItemGroup>
 </Project>

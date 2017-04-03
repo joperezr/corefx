@@ -90,13 +90,14 @@ namespace System.Net.Http.Functional.Tests
         {
             _output = output;
         }
-        
+
         [Fact]
         public void Ctor_ExpectedDefaultPropertyValues()
         {
             using (var handler = new HttpClientHandler())
             {
                 // Same as .NET Framework (Desktop).
+                Assert.Equal(DecompressionMethods.None, handler.AutomaticDecompression);
                 Assert.True(handler.AllowAutoRedirect);
                 Assert.Equal(ClientCertificateOption.Manual, handler.ClientCertificateOptions);
                 CookieContainer cookies = handler.CookieContainer;
@@ -114,12 +115,15 @@ namespace System.Net.Http.Functional.Tests
                 Assert.True(handler.UseProxy);
 
                 // Changes from .NET Framework (Desktop).
-                Assert.Equal(DecompressionMethods.GZip | DecompressionMethods.Deflate, handler.AutomaticDecompression);
-                Assert.Equal(0, handler.MaxRequestContentBufferSize);
+                if (!PlatformDetection.IsFullFramework) // TODO Issue #17691
+                {
+                    Assert.Equal(0, handler.MaxRequestContentBufferSize);
+                }
                 Assert.NotNull(handler.Properties);
             }
         }
 
+        [SkipOnTargetFramework(TargetFrameworkMonikers.NetFramework, "dotnet/corefx #17691")] // Difference in behavior
         [Fact]
         public void MaxRequestContentBufferSize_Get_ReturnsZero()
         {
@@ -129,6 +133,7 @@ namespace System.Net.Http.Functional.Tests
             }
         }
 
+        [SkipOnTargetFramework(TargetFrameworkMonikers.NetFramework, "dotnet/corefx #17691")] // Difference in behavior
         [Fact]
         public void MaxRequestContentBufferSize_Set_ThrowsPlatformNotSupportedException()
         {
@@ -260,6 +265,7 @@ namespace System.Net.Http.Functional.Tests
             }
         }
 
+        [SkipOnTargetFramework(TargetFrameworkMonikers.NetFramework, "dotnet/corefx #17691")] // difference in behavior
         [OuterLoop] // TODO: Issue #11345
         [Fact]
         public async Task SendAsync_Cancel_CancellationTokenPropagates()
@@ -278,9 +284,11 @@ namespace System.Net.Http.Functional.Tests
 
         [OuterLoop] // TODO: Issue #11345
         [Theory, MemberData(nameof(CompressedServers))]
-        public async Task GetAsync_DefaultAutomaticDecompression_ContentDecompressed(Uri server)
+        public async Task GetAsync_SetAutomaticDecompression_ContentDecompressed(Uri server)
         {
-            using (var client = new HttpClient())
+            var handler = new HttpClientHandler();
+            handler.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+            using (var client = new HttpClient(handler))
             {
                 using (HttpResponseMessage response = await client.GetAsync(server))
                 {
@@ -298,9 +306,11 @@ namespace System.Net.Http.Functional.Tests
 
         [OuterLoop] // TODO: Issue #11345
         [Theory, MemberData(nameof(CompressedServers))]
-        public async Task GetAsync_DefaultAutomaticDecompression_HeadersRemoved(Uri server)
+        public async Task GetAsync_SetAutomaticDecompression_HeadersRemoved(Uri server)
         {
-            using (var client = new HttpClient())
+            var handler = new HttpClientHandler();
+            handler.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+            using (var client = new HttpClient(handler))
             using (HttpResponseMessage response = await client.GetAsync(server, HttpCompletionOption.ResponseHeadersRead))
             {
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -449,6 +459,7 @@ namespace System.Net.Http.Functional.Tests
             }
         }
 
+        [SkipOnTargetFramework(TargetFrameworkMonikers.NetFramework, "dotnet/corefx #17691")] // Difference in behavior
         [OuterLoop] // TODO: Issue #11345
         [Fact]
         public async Task GetAsync_AllowAutoRedirectTrue_RedirectFromHttpsToHttp_StatusCodeRedirect()
@@ -876,6 +887,7 @@ namespace System.Net.Http.Functional.Tests
             });
         }
 
+        [SkipOnTargetFramework(TargetFrameworkMonikers.NetFramework, "dotnet/corefx #17691")] // Difference in behavior
         [OuterLoop] // TODO: Issue #11345
         [Fact]
         public async Task GetAsync_ResponseHeadersRead_ReadFromEachIterativelyDoesntDeadlock()
@@ -921,6 +933,7 @@ namespace System.Net.Http.Functional.Tests
             }
         }
 
+        [SkipOnTargetFramework(TargetFrameworkMonikers.NetFramework, "dotnet/corefx #17691")] // Hangs on NETFX
         [OuterLoop] // TODO: Issue #11345
         [Fact]
         public async Task SendAsync_ReadFromSlowStreamingServer_PartialDataReturned()
@@ -1555,6 +1568,7 @@ namespace System.Net.Http.Functional.Tests
             }
         }
 
+        [SkipOnTargetFramework(TargetFrameworkMonikers.NetFramework, "dotnet/corefx #17691")] // Difference in behavior
         [OuterLoop] // TODO: Issue #11345
         [Theory, MemberData(nameof(HttpMethodsThatAllowContent))]
         public async Task SendAsync_SendRequestUsingMethodToEchoServerWithContent_Success(
@@ -1618,6 +1632,7 @@ namespace System.Net.Http.Functional.Tests
             }
         }
 
+        [SkipOnTargetFramework(TargetFrameworkMonikers.NetFramework, "dotnet/corefx #17691")] // Difference in behavior
         [OuterLoop] // TODO: Issue #11345
         [Theory, MemberData(nameof(HttpMethodsThatDontAllowContent))]
         public async Task SendAsync_SendRequestUsingNoBodyMethodToEchoServerWithContent_NoBodySent(
@@ -1669,6 +1684,7 @@ namespace System.Net.Http.Functional.Tests
             Assert.Equal(new Version(1, 1), receivedRequestVersion);
         }
 
+        [SkipOnTargetFramework(TargetFrameworkMonikers.NetFramework, "dotnet/corefx #17691")] // Hangs on NETFX
         [OuterLoop] // TODO: Issue #11345
         [Fact]
         public async Task SendAsync_RequestVersionNotSpecified_ServerReceivesVersion11Request()
@@ -1792,6 +1808,7 @@ namespace System.Net.Http.Functional.Tests
         #endregion
 
         #region Proxy tests
+        [SkipOnTargetFramework(TargetFrameworkMonikers.NetFramework, "dotnet/corefx #17691")] // Difference in behavior
         [OuterLoop] // TODO: Issue #11345
         [Theory]
         [MemberData(nameof(CredentialsForProxy))]
@@ -1835,6 +1852,7 @@ namespace System.Net.Http.Functional.Tests
             }
         }
 
+        [SkipOnTargetFramework(TargetFrameworkMonikers.NetFramework, "dotnet/corefx #17691")] // Difference in behavior
         [OuterLoop] // TODO: Issue #11345
         [Theory]
         [MemberData(nameof(BypassedProxies))]
