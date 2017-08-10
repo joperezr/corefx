@@ -8,6 +8,8 @@
     <StringResourcesPath>..\..\System.Private.Xml\src\Resources\Strings.resx</StringResourcesPath>
     <DefineConstants>$(DefineConstants);XMLSERIALIZERGENERATOR</DefineConstants>
     <SourceDir>..\..\System.Private.Xml\src</SourceDir>
+    <!-- Disable warning when a field is never used -->
+    <NoWarn>$(NoWarn);CS0169;CS0649;CS0414</NoWarn>
   </PropertyGroup>
   <!-- Default configurations to help VS understand the options -->
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'netstandard-Debug|AnyCPU'" />
