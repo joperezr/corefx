@@ -3,12 +3,14 @@
   "targets": {
     "UAP,Version=v10.0.15138": {},
     "NETCoreApp,Version=v2.0": {},
+    "NETCoreApp,Version=v2.1": {},
     "NETStandard,Version=2.0": {}
   },
   "libraries": {},
   "projectFileDependencyGroups": {
     "UAP,Version=v10.0.15138": [],
     "NETCoreApp,Version=v2.0": [],
+    "NETCoreApp,Version=v2.1": [],
     "NETStandard,Version=2.0": []
   },
   "packageFolders": {
